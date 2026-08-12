@@ -359,10 +359,36 @@
     display: none;
   }
 
+  .print-value{
+    display: none;
+  }
+
   @media print{
     .topbar, .btn-row, #lockedNote { display: none !important; }
     body{ background: white; color: black; }
     .qcard, .panel, .rules{ border-color: #ccc !important; background: white !important; box-shadow:none !important; }
+    .qcard{ break-inside: avoid; page-break-inside: avoid; }
+    /* Hide live form controls; show their auto-sizing text twins instead,
+       so long answers always wrap and fit rather than being clipped. */
+    input[data-track], textarea[data-track]{ display: none !important; }
+    .print-value{
+      display: block !important;
+      width: 100%;
+      min-height: 1.4em;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font-family: var(--sans);
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: var(--text);
+      background: var(--panel-2);
+    }
+    .print-value:empty::after{
+      content: attr(data-placeholder);
+      color: #9AA7A5;
+    }
   }
 </style>
 </head>
@@ -675,6 +701,18 @@
       }
       updateProgress();
     });
+  });
+
+  // Create a hidden "print twin" for every field — inputs AND textareas —
+  // and keep it in sync, so long answers always wrap to fit on the printed
+  // page instead of being clipped by a fixed box height.
+  document.querySelectorAll('[data-track]').forEach(field => {
+    const twin = document.createElement('div');
+    twin.className = 'print-value';
+    twin.setAttribute('data-placeholder', field.placeholder || '');
+    twin.textContent = field.value;
+    field.insertAdjacentElement('afterend', twin);
+    field.addEventListener('input', () => { twin.textContent = field.value; });
   });
 
   function clearAll(){
