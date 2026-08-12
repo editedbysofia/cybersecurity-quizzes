@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 :: Securing Data — Field Quiz</title>
+<style>
+  :root{
+    --bg: #F4F6F5;
+    --panel: #FFFFFF;
+    --panel-2: #EEF2F1;
+    --line: #D8E0DE;
+    --teal: #0E7C72;
+    --amber: #A15E0A;
+    --text: #16232B;
+    --muted: #5B6B70;
+    --danger: #B3403A;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(14,124,114,0.06), transparent 40%),
+      radial-gradient(circle at 100% 20%, rgba(161,94,10,0.05), transparent 35%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    padding: 0 0 80px 0;
+  }
+
+  @font-face{
+    font-family:'JetBrains Mono';
+    src: local('JetBrains Mono'), local('Courier New');
+  }
+
+  .topbar{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(244,246,245,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 20px;
+  }
+  .topbar-inner{
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .lock-icon{
+    width: 22px; height: 22px; flex-shrink:0;
+    color: var(--teal);
+  }
+  .progress-label{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .progress-track{
+    flex: 1;
+    height: 6px;
+    background: var(--panel-2);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .progress-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--teal), var(--amber));
+    transition: width 0.4s ease;
+  }
+
+  .hero{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 20px 20px;
+  }
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--teal);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before{
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--teal);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(14,124,114,0.4);
+  }
+  h1{
+    font-family: var(--mono);
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.15;
+    margin: 14px 0 10px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  h1 span{ color: var(--muted); }
+  .subtitle{
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 58ch;
+  }
+  .rules{
+    margin-top: 22px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .rules strong{ color: var(--text); }
+
+  .section{
+    max-width: 760px;
+    margin: 48px auto 0;
+    padding: 0 20px;
+  }
+  .section-head{
+    display:flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-tag{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #FFFFFF;
+    background: var(--teal);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .section-tag.amber{ background: var(--amber); }
+  .section-title{
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--text);
+  }
+  .section-desc{
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: -8px 0 18px;
+  }
+
+  .qcard{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+    box-shadow: 0 1px 2px rgba(22,35,43,0.04);
+  }
+  .qcard:focus-within{
+    border-color: var(--teal);
+  }
+  .qcard-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding: 8px 12px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; background: var(--line); }
+  .qnum{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 4px;
+  }
+  .qstatus{
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #AEBAB8;
+    letter-spacing: 0.06em;
+  }
+  .qstatus.done{ color: var(--teal); }
+  .qbody{ padding: 16px 18px 18px; }
+  .qtext{
+    font-size: 15px;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  .qhint{
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0 0 10px;
+    font-style: italic;
+  }
+  .qtext code, .qhint code{
+    font-family: var(--mono);
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--amber);
+    font-style: normal;
+  }
+  textarea, input[type="text"], input[type="number"]{
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 10px 12px;
+    resize: vertical;
+    outline: none;
+  }
+  textarea:focus, input:focus{
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(14,124,114,0.12);
+  }
+  .link-embed{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--teal);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--teal);
+    margin-bottom: 12px;
+  }
+  .link-embed:hover{ color: var(--amber); border-color: var(--amber); }
+
+  .parts{ margin: 6px 0 0; padding-left: 0; list-style: none; }
+  .parts li{ margin-bottom: 12px; }
+  .parts .plabel{
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--amber);
+    display:block;
+    margin-bottom: 5px;
+  }
+
+  .boss{
+    border: 1px solid var(--danger);
+    background: linear-gradient(180deg, rgba(179,64,58,0.05), transparent 30%), var(--panel);
+  }
+  .boss .qcard-bar{ background: rgba(179,64,58,0.07); border-bottom-color: var(--danger); }
+  .boss-badge{
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+
+  .ai-ok{
+    border: 1px solid var(--teal);
+  }
+  .ai-ok .qcard-bar{ background: rgba(14,124,114,0.08); }
+  .ai-badge{
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--teal);
+    border: 1px solid var(--teal);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+
+  .cryptogram{
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    background: var(--panel-2);
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 0 0 12px;
+    color: var(--text);
+  }
+
+  .finish{
+    max-width: 760px;
+    margin: 50px auto 0;
+    padding: 0 20px;
+    text-align: center;
+  }
+  .finish-card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 32px 24px;
+  }
+  .finish-title{
+    font-family: var(--mono);
+    font-size: 20px;
+    margin: 0 0 8px;
+    color: var(--text);
+  }
+  .finish-sub{
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 22px;
+  }
+  .btn-row{
+    display:flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  button{
+    font-family: var(--mono);
+    font-size: 13.5px;
+    padding: 12px 22px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    background: var(--panel-2);
+    color: var(--text);
+    transition: all 0.15s ease;
+  }
+  button.primary{
+    background: var(--teal);
+    color: #FFFFFF;
+    border-color: var(--teal);
+    font-weight: 700;
+  }
+  button.primary:hover{ background: #0C685F; }
+  button:hover{ border-color: var(--muted); }
+  #lockedNote{
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--teal);
+    margin-top: 18px;
+    display: none;
+  }
+
+  .print-value{
+    display: none;
+  }
+
+  @media print{
+    .topbar, .btn-row, #lockedNote { display: none !important; }
+    body{ background: white; color: black; }
+    .qcard, .panel, .rules{ border-color: #ccc !important; background: white !important; box-shadow:none !important; }
+    .qcard{ break-inside: avoid; page-break-inside: avoid; }
+    /* Hide live form controls; show their auto-sizing text twins instead,
+       so long answers always wrap and fit rather than being clipped. */
+    input[data-track], textarea[data-track]{ display: none !important; }
+    .print-value{
+      display: block !important;
+      width: 100%;
+      min-height: 1.4em;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font-family: var(--sans);
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: var(--text);
+      background: var(--panel-2);
+    }
+    .print-value:empty::after{
+      content: attr(data-placeholder);
+      color: #9AA7A5;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <rect x="4" y="11" width="16" height="9" rx="2"/>
+      <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+    </svg>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressLabel">0 / 0 answered</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Phase 1 — Foundations</div>
+  <h1>Securing Data <span>// field quiz</span></h1>
+  <p class="subtitle">Write your own answers before looking anything up. Nobody's grading your handwriting — this is about how you think through a problem, not whether you recite the "right" words.</p>
+  <div class="rules">
+    <strong>Ground rules:</strong> answer everything yourself first. No AI, no googling until you've written something down — even a guess — unless a question specifically says AI is okay. If you get stuck, write down what you <em>do</em> know and move on.
+  </div>
+</div>
+
+<!-- ============ SECTION A: CHALLENGE QUESTIONS ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-tag">A</span>
+    <span class="section-title">Challenge Questions</span>
+  </div>
+  <p class="section-desc">Answer in your own words.</p>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q1</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Explain the difference between <em>hashing</em> and <em>encryption</em>.</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q2</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Explain why a stolen password database can still be dangerous even if the passwords in it are hashed.</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q3</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Imagine two companies each get their password database stolen. Company A salted its password hashes; Company B didn't. Reason through what happens next for each one — who's in more trouble, and why?</p>
+      <ul class="parts">
+        <li><span class="plabel">Company A — salted</span><textarea rows="2" data-track></textarea></li>
+        <li><span class="plabel">Company B — unsalted</span><textarea rows="2" data-track></textarea></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q4 · teach-back</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Explain what a salt accomplishes — as if to someone who's never heard the term.</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q5</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">If two people need to share a secret key securely in order to use it for encryption, what problem does that create?</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q6</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Explain why publishing a <strong>public</strong> key out in the open does not defeat the whole system.</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard boss">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q7 · boss scenario</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">A company's <strong>encrypted</strong> customer database is stolen. What questions would a security investigator need answered before deciding how serious this breach actually is?</p>
+      <textarea rows="4" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SECTION B: CORE QUIZ ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-tag amber">B</span>
+    <span class="section-title">Core Concepts Quiz</span>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q1</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Characterize the difference between a database <em>hack</em> and a database <em>leak</em>.</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q2</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">In what sense might files not actually be deleted even if you empty the recycle bin on Windows or empty the trash on macOS?</p>
+      <textarea rows="4" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q3</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">How do quantum computers differ from traditional (non-quantum) computers?</p>
+      <textarea rows="4" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q4</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">What is the term for the prevailing method by which public-key (i.e., asymmetric) cryptography enables two parties to establish a shared secret, even over an insecure (unencrypted) channel?</p>
+      <input type="text" data-track placeholder="Type your answer here...">
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q5</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">What is a <em>salt</em>, in the context of password storage?</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q6</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Suppose Alice and Bob need to coordinate a meeting by exchanging emails using a popular email client. If their emails are encrypted in-transit, who — besides Alice and Bob, or anyone with access to their computers — might nonetheless be able to read the emails, if anyone?</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q7</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Suppose you've been hired to do some work for Charlie. You send Charlie a contract by email. Later that day, you receive a digitally signed copy back — but from an email address that appears to belong to Charlie, though it isn't the one you originally sent the contract to. How can you be as certain as possible, <strong>technologically</strong> (without contacting Charlie), that Charlie is the one who actually signed it?</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q8</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Suppose a company makes a large file available for download from its website. Why might they also publish the MD5 hash of that file, as is a common practice?</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q9</span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">Identify one or more significant differences between a <em>cipher</em> and a <em>hash</em>.</p>
+      <textarea rows="3" data-track placeholder="Type your answer here..."></textarea>
+    </div>
+  </div>
+
+  <div class="qcard ai-ok">
+    <div class="qcard-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="qnum">Q10<span class="ai-badge">ChatGPT permitted</span></span><span class="qstatus" data-status>○ empty</span></div>
+    <div class="qbody">
+      <p class="qtext">This one isn't random typing:</p>
+      <div class="cryptogram">Otkz D zvmizy v amzz kjdio! di ocz wjs wzgjr.</div>
+      <p class="qtext">Decode the message and type it in the box below.</p>
+      <p class="qhint">You're allowed to use ChatGPT for this one — but don't just paste it in and copy the output. Have it walk you through <em>how</em> the decoding actually works, then do the reasoning yourself.</p>
+      <input type="text" data-track placeholder="Type the decoded message here...">
+    </div>
+  </div>
+</div>
+
+<div class="finish">
+  <div class="finish-card">
+    <p class="finish-title">// end of transmission</p>
+    <p class="finish-sub">When you're done, print or save this page as a PDF to hand in — or just keep it open and talk through your answers out loud.</p>
+    <div class="btn-row">
+      <button class="primary" onclick="window.print()">Print / Save as PDF</button>
+      <button onclick="clearAll()">Clear all answers</button>
+    </div>
+    <p id="lockedNote">✓ All fields have a response. Nice work.</p>
+  </div>
+</div>
+
+<script>
+  const fields = Array.from(document.querySelectorAll('[data-track]'));
+  const fill = document.getElementById('progressFill');
+  const label = document.getElementById('progressLabel');
+  const lockedNote = document.getElementById('lockedNote');
+
+  function updateProgress(){
+    const answered = fields.filter(f => f.value.trim().length > 0).length;
+    const pct = Math.round((answered / fields.length) * 100);
+    fill.style.width = pct + '%';
+    label.textContent = answered + ' / ' + fields.length + ' answered';
+    lockedNote.style.display = answered === fields.length ? 'block' : 'none';
+  }
+
+  fields.forEach(f => {
+    f.addEventListener('input', () => {
+      const card = f.closest('.qcard');
+      if(card){
+        const allInCard = card.querySelectorAll('[data-track]');
+        const anyFilled = Array.from(allInCard).some(x => x.value.trim().length > 0);
+        const st = card.querySelector('.qnum').nextElementSibling;
+        if(st){
+          if(anyFilled){ st.textContent = '● in progress'; st.classList.add('done'); }
+          else { st.textContent = '○ empty'; st.classList.remove('done'); }
+        }
+      }
+      updateProgress();
+    });
+  });
+
+  // Create a hidden "print twin" for every field — inputs AND textareas —
+  // and keep it in sync, so long answers always wrap to fit on the printed
+  // page instead of being clipped by a fixed box height.
+  document.querySelectorAll('[data-track]').forEach(field => {
+    const twin = document.createElement('div');
+    twin.className = 'print-value';
+    twin.setAttribute('data-placeholder', field.placeholder || '');
+    twin.textContent = field.value;
+    field.insertAdjacentElement('afterend', twin);
+    field.addEventListener('input', () => { twin.textContent = field.value; });
+  });
+
+  function clearAll(){
+    if(!confirm('Clear every answer on this page?')) return;
+    fields.forEach(f => f.value = '');
+    document.querySelectorAll('[data-status]').forEach(st => {
+      st.textContent = '○ empty';
+      st.classList.remove('done');
+    });
+    updateProgress();
+  }
+
+  updateProgress();
+</script>
+
+</body>
+</html>
